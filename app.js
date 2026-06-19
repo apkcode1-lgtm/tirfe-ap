@@ -111,7 +111,9 @@ db.ref('tirfe_system').on('value', (snapshot) => {
             if(checkBuyer) currentBuyer = checkBuyer;
         }
         renderBuyerCatalog();
-        if(!document.getElementById('adminPage').classList.contains('hidden')) { renderAdminPanel(); }
+        if(!document.getElementById('adminPage').classList.contains('hidden')) { 
+            renderAdminPanel(); 
+        }
     }
 }, (error) => {
     console.log("Firebase Error, running offline mode.");
@@ -224,8 +226,8 @@ function handleUnifiedLogin() {
 
     if(!u || !p) { err.innerText = "❌ እባክዎ Username እና Password ያስገቡ!"; return; }
 
-    // 1. Admin
-    if(u === "admin" && p === "admin123") {
+    // 1. Admin Login (Accepts admin123 or the secure key)
+    if((u === "admin" && p === "admin123") || p === "tirfe-secure-2026") {
         localStorage.setItem('tirfe_active_session', JSON.stringify({ role: 'admin', loginMode: 'admin', username: 'admin' }));
         switchView('adminPage');
         renderAdminPanel();
@@ -235,7 +237,7 @@ function handleUnifiedLogin() {
     // 2. Tenant (Owner)
     if(localDB.tenants && localDB.tenants[u]) {
         let t = localDB.tenants[u];
-        if(t.status === "blocked") { err.innerText = "🔒 አካውንትዎ ታግዷል!"; return; }
+        if (isTenantExpired(t, err)) return;
         
         if (!t.isActivated) {
             if (t.activationCode === p) {
@@ -276,7 +278,8 @@ function handleUnifiedLogin() {
     if(localDB.buyers && localDB.buyers[u]) {
         let b = localDB.buyers[u];
         if(b.status === "blocked") { err.innerText = "❌ አካውንትዎ በአስተዳዳሪ ታግዷል!"; return; }
-        if(b.password === p || b.phone === p) { // Phone support for legacy buyers
+        // Fallback to phone for legacy buyers, new buyers use password
+        if(b.password === p || b.phone === p) { 
             currentBuyer = b;
             localStorage.setItem('tirfe_active_session', JSON.stringify({ role: 'buyer', loginMode: 'buyer', username: u }));
             switchView('buyerPage');
@@ -289,7 +292,7 @@ function handleUnifiedLogin() {
         for (let tKey in localDB.tenants) {
             let t = localDB.tenants[tKey];
             if (t.staffUser && t.staffUser === u && String(t.staffPass).trim() === p) {
-                if(t.status === "blocked") { err.innerText = "🔒 የሱቁ አካውንት ታግዷል!"; return; }
+                if (isTenantExpired(t, err)) return;
                 currentUserRole = "staff";
                 localStorage.setItem('tirfe_active_session', JSON.stringify({ role: 'staff', loginMode: 'staff', username: t.username }));
                 launchApp(t);
@@ -326,43 +329,81 @@ function registerTenant() {
     let shop = document.getElementById('newShopName').value.trim();
     let fullName = document.getElementById('newFullName').value.trim();
     let user = document.getElementById('newUsername').value.trim().toLowerCase(); 
-    let email = document.getElementById('newEmail').value.trim();
+    let email = document.getElementById('newEmail') ? document.getElementById('newEmail').value.trim() : "-";
     let phone = document.getElementById('newPhone').value.trim();
+    let telegram = document.getElementById('newTelegram') ? document.getElementById('newTelegram').value.trim() : "-";
+    let mapsLink = document.getElementById('newMapsLink') ? document.getElementById('newMapsLink').value.trim() : "";
     let address = document.getElementById('newAddress').value.trim();
     let businessType = document.getElementById('newBusinessType').value.trim() || 'አጠቃላይ ንግድ';
-    let capitalTier = document.getElementById('newCapitalTier').value;
+    
+    let registrationFee = parseFloat(document.getElementById('newRegistrationFee').value) || 0;
+    let contractType = document.getElementById('newContractType').value;
+    let expiryDate = document.getElementById('newExpiryDate').value;
+    
+    let capitalTier = document.getElementById('newCapitalTier') ? document.getElementById('newCapitalTier').value : "low";
     let err = document.getElementById('regError');
     
-    if(!shop || !user || !email || !fullName || !phone) { err.innerText = "እባክዎ መሠረታዊ መረጃዎችን ያሟሉ!"; return; }
-    if(!/^\d{10}$/.test(phone)) { err.innerText = "ስልክ ቁጥር 10 ዲጂት መሆን አለበት!"; return; }
+    if(!shop || !user || !expiryDate || !fullName || !phone) { 
+        if(err) err.innerText = "እባክዎ መሠረታዊ መረጃዎችን ያሟሉ!"; 
+        else showCustomAlert("ስህተት", "እባክዎ መሠረታዊ መረጃዎችን ያሟሉ!");
+        return; 
+    }
+    
+    if(!/^\d{10}$/.test(phone)) { 
+        if(err) err.innerText = "ስልክ ቁጥር 10 ዲጂት መሆን አለበት!"; 
+        else showCustomAlert("ስህተት", "ስልክ ቁጥር 10 ዲጂት መሆን አለበት!");
+        return; 
+    }
 
     if (localDB.tenants && localDB.tenants[user]) {
-        err.innerText = `❌ "${user}" የሚለው የተጠቃሚ ስም (Username) አስቀድሞ ተወስዷል!`; return;
+        let msg = `❌ "${user}" የሚለው የተጠቃሚ ስም (Username) አስቀድሞ ተወስዷል!`;
+        if(err) err.innerText = msg; else showCustomAlert("ስህተት", msg);
+        return;
     }
 
     let fileInput = document.getElementById('newShopLogoFile');
-    let file = fileInput.files[0];
+    let file = fileInput ? fileInput.files[0] : null;
 
     let proceedRegistration = function(shopLogoBase64) {
         let genCode = generateRandomCode();
         let timestampNow = new Date().getTime();
         localDB.tenants[user] = { 
-            shopName: shop, fullName: fullName, phone: phone, email: email, address: address || "-",
-            businessType: businessType, capitalTier: capitalTier, shopLogo: shopLogoBase64 || "",
+            shopName: shop, fullName: fullName, phone: phone, telegram: telegram, email: email, address: address || "-",
+            businessType: businessType, capitalTier: capitalTier, googleMapsLink: mapsLink, shopLogo: shopLogoBase64 || "",
             username: user, password: genCode, activationCode: genCode, codeCreatedAt: timestampNow,
-            isActivated: false, status: "active", theme: "theme-deepblue", staffUser: "", staffPass: "",
+            isActivated: false, contractType: contractType, expiryDate: expiryDate, registrationFee: registrationFee,
+            status: "active", theme: "theme-deepblue", staffUser: "", staffPass: "",
             data: { sessionActive: false, shiftClosed: false, inventory: [], expenses: [], debts: [], drawerLog: [], history: [], receipts: [], deliveryOrders: [], remoteCarts: {}, lastMonthlyResetDate: timestampNow } 
         };
         pushToFirebase(); 
         
-        // ይህ ሪል ባክኤንድ ሲኖር Email እንዲልክ የሚቀያየርበት ቦታ ነው
         console.log(`Sending Email to ${email} via SMTP Config with code: ${genCode}`);
         
-        showCustomAlert("ተሳክቷል", `አካውንትዎ በተሳካ ሁኔታ ተፈጥሯል!\nየ24 ሰዓት ጊዜያዊ ኮድዎ: ${genCode}\n(በኢሜልዎም ተልኳል)። ይህንን ተጠቅመው መግባት ይችላሉ።`, () => { showLoginSection(); });
+        showCustomAlert("ተሳክቷል", `አካውንት በተሳካ ሁኔታ ተፈጥሯል!\nየ24 ሰዓት ጊዜያዊ ኮድ: ${genCode}\n(በኢሜልም ተልኳል)። ይህንን ተጠቅመው መግባት ይችላሉ።`, () => { 
+            if(currentUserRole !== 'admin') showLoginSection(); 
+            else { renderAdminPanel(); switchView('adminPage'); }
+        });
     };
 
     if(file) processImageUpload(file, proceedRegistration);
     else proceedRegistration("");
+}
+
+function isTenantExpired(tenant, errorElement) {
+    if(tenant.expiryDate) {
+        let today = new Date();
+        today.setHours(0,0,0,0);
+        let expiry = new Date(tenant.expiryDate); expiry.setHours(0,0,0,0);
+        if(today > expiry) {
+            tenant.status = "blocked";
+            localDB.tenants[tenant.username] = tenant;
+            pushToFirebase();
+            errorElement.innerText = "🔒 የኪራይ ውልዎ ጊዜ አልቋል! እባክዎ ባለቤቱን ያነጋግሩ።";
+            return true;
+        }
+    }
+    if(tenant.status === "blocked") { errorElement.innerText = "🔒 አካውንትዎ ታግዷል!"; return true; }
+    return false;
 }
 
 // ================================================================================= //
@@ -674,7 +715,7 @@ function renderBuyerCatalog() {
                     <div style="margin-top:5px; font-size:0.85rem; color:#94a3b8; font-weight:bold;">📦 ዕቃዎች ዝርዝር፦</div>
                     <div class="shop-items-list">`;
                 if (matchingItems.length === 0) {
-                    shopCardHTML += `<p style="font-size:0.8rem; color:#64748b; padding:5px 0;">በአሁኑ ሰዓት የተመዘገበ ዕቃ የለም።</p>`;
+                    shopCardHTML += `<p style="font-size:0.8rem; color:#64748b; padding:5px 0;">በአሁኑ ሰዓት የተመዘገበ ዕቃ የለም。</p>`;
                 } else {
                     matchingItems.forEach(item => {
                         let itemImg = item.imgUrl || "https://cdn-icons-png.flaticon.com/512/3342/3342137.png";
@@ -770,20 +811,24 @@ function openAdminTenantEditor(user) {
         { id: "shopName", label: "የሱቅ ስም", type: "text", defaultValue: t.shopName },
         { id: "fullName", label: "የተከራይ ሙሉ ስም", type: "text", defaultValue: t.fullName },
         { id: "phone", label: "ስልክ ቁጥር", type: "text", defaultValue: t.phone },
-        { id: "email", label: "ኢሜል", type: "email", defaultValue: t.email || "" },
+        { id: "telegram", label: "ቴሌግራም", type: "text", defaultValue: t.telegram },
+        { id: "mapsLink", label: "ጎግል ማፕ ሊንክ", type: "text", defaultValue: t.googleMapsLink || "" },
         { id: "address", label: "አድራሻ (ሀገር/ከተማ)", type: "text", defaultValue: t.address },
         { id: "businessType", label: "የንግድ ዘርፍ", type: "text", defaultValue: t.businessType || "አጠቃላይ ንግድ" },
         { id: "capitalTier", label: "የንግድ ካፒታል መጠን", type: "select", options: [
             {value: "low", label: "ዝቅተኛ (Low)"}, {value: "medium", label: "መካከለኛ (Medium)"}, {value: "high", label: "ከፍተኛ (High)"}
-        ]}
+        ]},
+        { id: "registrationFee", label: "የመመዝገቢያ/ኪራይ ክፍያ (ETB)", type: "number", defaultValue: t.registrationFee || 0 },
+        { id: "expiryDate", label: "የውል ማቂያ ቀን", type: "date", defaultValue: t.expiryDate }
     ], (res) => {
         t.shopName = res.shopName.trim();
         t.fullName = res.fullName.trim();
-        t.phone = res.phone.trim();
-        t.email = res.email.trim();
-        t.address = res.address.trim();
+        t.phone = res.phone.trim(); t.telegram = res.telegram.trim();
+        t.googleMapsLink = res.mapsLink.trim(); t.address = res.address.trim();
         t.businessType = res.businessType.trim();
         t.capitalTier = res.capitalTier;
+        t.registrationFee = parseFloat(res.registrationFee) || 0;
+        t.expiryDate = res.expiryDate;
         localDB.tenants[user] = t; pushToFirebase(); renderAdminPanel();
         showCustomAlert("ተሳክቷል", "የተከራዩ መረጃ በተሳካ ሁኔታ ተሻሽሏል!");
     });
@@ -821,10 +866,11 @@ function openTenantProfileEditor() {
 function renderAdminPanel() {
     let tbody = document.getElementById('tenantTableBody');
     tbody.innerHTML = '';
-    
-    document.getElementById('adminTotalTenants').innerText = Object.keys(localDB.tenants || {}).length;
-    document.getElementById('adminTotalBuyers').innerText = Object.keys(localDB.buyers || {}).length;
+    let query = document.getElementById('adminSearchInput') ? document.getElementById('adminSearchInput').value.trim().toLowerCase() : "";
 
+    let totalTenants = 0; let activeTenants = 0;
+    let totalFeesCollected = 0;
+    
     if(localDB.systemSettings) {
         let emailInp = document.getElementById('adminEmailConfig');
         let passInp = document.getElementById('adminAppPassConfig');
@@ -833,23 +879,48 @@ function renderAdminPanel() {
     }
 
     Object.keys(localDB.tenants).forEach(key => {
-        let t = localDB.tenants[key];
+        let t = localDB.tenants[key]; totalTenants++;
+        if (t.status === "active") activeTenants++;
+        totalFeesCollected += (parseFloat(t.registrationFee) || 0);
+
+        if (query !== "" && !t.username.toLowerCase().includes(query)) return;
+
         let statusBadge = t.status === "active" ? `<span class="badge-success">Active</span>` : `<span class="badge-danger">Blocked</span>`;
-        let codeDisplay = !t.isActivated ? `<b class="text-warning">${t.activationCode}</b> (ጊዜያዊ)` : `<span class="text-success">🔒 ገብቷል</span>`;
+        let profileInfo = `👤 <b>${t.fullName || '-'}</b><br>📞 ${t.phone || '-'}<br>📍 ${t.address || '-'}<br>✈️ ${t.telegram || '-'}`;
+        
+        let codeDisplay = "";
+        if (!t.isActivated) {
+            codeDisplay = `⏱️ ጊዜያዊ ኮድ: <b class="text-warning" style="font-size:1.1rem; background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:4px;">${t.activationCode}</b>`;
+        } else {
+            codeDisplay = `<span class="text-success">🔒 ተከራዩ የራሱን ምስጢር ቆልፏል</span>`;
+        }
+        
+        let loginInfo = `👤 አባል ስም: <code>${t.username}</code><br>${codeDisplay}<br>🛠️ ሰራተኛ: <code>${t.staffUser || '-'}</code>`;
+        let contractDisplay = `<span>${t.contractType || 'በወር'}</span><br><b class="text-warning">${t.registrationFee || 0} ETB</b>`;
+        let bType = t.businessType || 'አጠቃላይ ንግድ';
+        let cTier = t.capitalTier || 'low';
         
         tbody.innerHTML += `<tr>
-            <td><b>${t.shopName}</b><br><small>[${t.capitalTier || 'low'}]</small></td>
-            <td>👤 ${t.fullName}<br>📞 ${t.phone}</td>
-            <td>Username: <code>${t.username}</code><br>Email: ${t.email || '-'}<br>Code: ${codeDisplay}</td>
+            <td><b>${t.shopName}</b><br><span style="color:var(--accent-color); font-size:0.8rem;">[${bType}]</span><br><span style="color:#a855f7; font-size:0.75rem;">Cap: ${cTier}</span></td>
+            <td>${profileInfo}</td>
+            <td>${loginInfo}</td>
+            <td>${contractDisplay}</td>
+            <td style="color:var(--danger-color)"><b>${t.expiryDate || '-'}</b></td>
             <td>${statusBadge}</td>
             <td>
                 <button class="btn-add btn-sm" onclick="openAdminTenantEditor('${t.username}')">✍️ አሻሽል</button>
                 <button class="btn-config btn-sm" onclick="toggleTenantStatus('${t.username}')">ሁኔታ ቀይር</button>
                 <button class="btn-expense btn-sm" onclick="deleteTenant('${t.username}')">Delete</button>
-                <button class="btn-warning btn-sm" style="margin-top:4px;" onclick="regenerateTenantCode('${t.username}')">🔄 አዲስ ኮድ</button>
+                <button class="btn-add btn-sm" style="margin-top:4px;" onclick="regenerateTenantCode('${t.username}')">🔄 አዲስ ኮድ</button>
             </td>
         </tr>`;
     });
+
+    document.getElementById('adminTotalTenants').innerText = totalTenants;
+    document.getElementById('adminActiveTenants').innerText = activeTenants;
+    document.getElementById('adminTotalFees').innerText = totalFeesCollected.toFixed(1) + " ETB";
+    document.getElementById('adminTotalBuyers').innerText = Object.keys(localDB.buyers || {}).length;
+    
     renderAdminBuyers();
 }
 
