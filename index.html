@@ -7,8 +7,11 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Tirfe%20App%22%2C%22short_name%22%3A%22Tirfe%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%230b0f19%22%2C%22theme_color%22%3A%22%2338bdf8%22%7D">
+    
     <title>ትርፌ የሱቅ መቆጣጠሪያ አፕሊኬሽን - Ultimate v12.0</title>
+    
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,7 +19,7 @@
 </head>
 <body class="theme-deepblue">
 
-<div id="imageLightbox" class="modal-overlay hidden" onclick="this.classList.add('hidden')" style="z-index: 999999; cursor: zoom-out;">
+<div id="imageLightbox" class="modal-overlay hidden" onclick="this.classList.add('hidden')" style="z-index: 999999 !important; cursor: zoom-out;">
     <img id="lightboxImg" src="" style="max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--accent-color); box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
 </div>
 
@@ -53,7 +56,7 @@
     </div>
 
     <div id="registerPage" class="login-box hidden" style="max-width: 500px;">
-        <h2>📝 አዲስ የደንበኛ ምዝገባ</h2>
+        <h2>📝 አዲስ ምዝገባ</h2>
         <label style="color: var(--accent-color); font-size: 0.9rem; margin-bottom: 5px; display: block;">ማንነትዎን ይምረጡ፦</label>
         <select id="regRole" onchange="toggleRegForm()">
             <option value="">-- ይምረጡ --</option>
@@ -76,6 +79,8 @@
             <input type="text" id="newUsername" placeholder="መግቢያ ስም (Username)">
             <input type="email" id="newEmail" placeholder="ኢሜል አድራሻ (ግዴታ)">
             <input type="tel" id="newPhone" placeholder="ስልክ ቁጥር (10 አሃዝ)" maxlength="10">
+            <input type="text" id="newTelegram" placeholder="የቴሌግራም መግቢያ (አማራጭ)">
+            <input type="text" id="newMapsLink" placeholder="የሱቅ ጎግል ማፕ ሊንክ (አማራጭ)">
             <input type="text" id="newAddress" placeholder="ያለበት ሀገር / ከተማ / ክልል">
             <input type="text" id="newBusinessType" placeholder="የንግድ ዘርፍ (ምሳሌ፡ ኤሌክትሮኒክስ)">
             
@@ -85,6 +90,16 @@
                 <option value="medium">መካከለኛ (Medium)</option>
                 <option value="high">ከፍተኛ (High)</option>
             </select>
+
+            <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ዓይነት (Contract Type)፦</label>
+            <select id="newContractType">
+                <option value="በወር">በወር (Monthly)</option>
+                <option value="በዓመት">በዓመት (Yearly)</option>
+            </select>
+
+            <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ማቂያ ቀን (Expiry Date)፦</label>
+            <input type="date" id="newExpiryDate" required>
+            <input type="number" id="newRegistrationFee" placeholder="የመመዝገቢያ/ኪራይ ክፍያ (ETB)">
 
             <label style="color: var(--accent-color); font-size: 0.85rem; margin-top:10px; display:block;">የሱቅ ፕሮፋይል ፎቶ (አማራጭ)፡</label>
             <input type="file" id="newShopLogoFile" accept="image/*">
@@ -111,7 +126,9 @@
                     <tbody id="buyerCartList"></tbody>
                 </table>
             </div>
-            <div class="cart-total-bar">አጠቃላይ ሂሳብ: <span id="buyerCartTotalSum" style="color: var(--success-color);">0</span> ብር</div>
+            <div class="cart-total-bar">
+                አጠቃላይ ሂሳብ: <span id="buyerCartTotalSum" style="color: var(--success-color);">0</span> ብር
+            </div>
             <button class="btn-sell btn-block" style="background-color: #f59e0b; color: #000; font-size: 1.1rem; border-radius: 8px;" onclick="checkoutBuyerCart()">✅ እርግጠኛ ነኝ ትዕዛዙን ወደ ሱቆች ላክ</button>
         </div>
         
@@ -152,7 +169,7 @@
 
     <div id="adminPage" class="hidden">
         <div class="welcome-header">
-            <h1>👑 የማዕከላዊ ቁጥጥር ፓነል (Admin)</h1>
+            <h1>👑 የባለቤቱ ማዕከላዊ ቁጥጥር ፓነል</h1>
             <p>እዚህ ገጽ ላይ አዳዲስ ተከራዮችን መመዝገብ፣ የውል ሁኔታ መወሰን እና ማስተዳደር ይችላሉ።</p>
             <button class="btn-expense" style="margin-top: 15px; width:100%;" onclick="logout()">🚪 ከሲስተሙ ውጣ</button>
         </div>
@@ -161,6 +178,14 @@
             <div class="card" style="border-left: 4px solid var(--accent-color);">
                 <h3>ጠቅላላ ተከራዮች</h3>
                 <p id="adminTotalTenants">0</p>
+            </div>
+            <div class="card" style="border-left: 4px solid var(--success-color);">
+                <h3>ንቁ ተከራዮች</h3>
+                <p id="adminActiveTenants">0</p>
+            </div>
+            <div class="card" style="border-left: 4px solid var(--warning-color);">
+                <h3>ጠቅላላ የተሰበሰበ ክፍያ</h3>
+                <p id="adminTotalFees">0.00 ETB</p>
             </div>
             <div class="card" style="border-left: 4px solid var(--purple-color);">
                 <h3>የገዥዎች ቆጠራ (Buyers)</h3>
@@ -191,13 +216,18 @@
 
         <div class="section-box">
             <h2>📈 የተከራዮች ሁኔታ እና የውል መቆጣጠሪያ</h2>
+            <div class="search-container">
+                <input type="text" id="adminSearchInput" class="search-input" placeholder="🔍 ተከራይን በዩዘርኔም (Username) ብቻ በቀላሉ ለመፈለግ..." oninput="renderAdminPanel()">
+            </div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>የሱቅ ስም / ካፒታል</th>
-                            <th>የተከራይ መገለጫ</th>
+                            <th>የሱቅ ስም / ዘርፍ / ካፒታል</th>
+                            <th>የተከራይ መገለጫ (Profile)</th>
                             <th>የመግቢያ ዝርዝር / ኮድ</th>
+                            <th>የውል ዓይነት / ክፍያ</th>
+                            <th>የማቂያ ቀን</th>
                             <th>የአሁን ሁኔታ</th>
                             <th>እርምጃዎች</th>
                         </tr>
