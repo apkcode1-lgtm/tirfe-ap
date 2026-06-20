@@ -88,7 +88,11 @@
             <h1>🛍️ የዕቃዎችና የሱቆች ማውጫ መድረክ</h1>
             <p>በአቅራቢያዎ ያሉ ሱቆችን ምርቶች፣ ዋጋዎች እና አድራሻ እዚህ ያግኙ። በዴሊቨሪ ማዘዝም ይችላሉ!</p>
             <div id="buyerProfileBadge" style="margin-top:10px; font-size:0.9rem; color:var(--warning-color); font-weight:bold;"></div>
-            <button class="btn-expense" style="margin-top:10px;" onclick="logoutBuyer()">🚪 ከገዥ ገፅ ውጣ</button>
+            
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top:10px;">
+                <button class="btn-config" style="background:var(--accent-color); color:#000;" onclick="openBuyerProfileSettings()">⚙️ የፕሮፋይል ሲቲንግ</button>
+                <button class="btn-expense" onclick="logoutBuyer()">🚪 ከገዥ ገፅ ውጣ</button>
+            </div>
         </div>
         
         <div class="section-box" id="buyerCartSection" style="display: none; border-color: var(--warning-color);">
@@ -250,7 +254,9 @@
                 <button class="btn-sell btn-block" style="margin-top: 10px;" onclick="saveAdminEmailSettings()">💾 ሲቲንግ አስቀምጥ</button>
             </div>
 
-        </div> <div class="section-box hidden" id="adminBuyersSection" style="border-color: var(--purple-color);">
+        </div> 
+        
+        <div class="section-box hidden" id="adminBuyersSection" style="border-color: var(--purple-color);">
             <button class="btn-config btn-sm" style="margin-bottom:15px;" onclick="toggleAdminBuyersView()">⬅️ ወደ ዳሽቦርድ ተመለስ</button>
             <h2 style="color: var(--purple-color);">👥 የገዥዎች ዝርዝር እና መቆጣጠሪያ</h2>
             <div class="table-responsive">
