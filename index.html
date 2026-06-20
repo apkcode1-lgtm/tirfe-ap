@@ -259,6 +259,17 @@
             <p id="roleSubTitle">ቀልጣፋ፣ ዘመናዊ እና አስተማማኝ የሱቅዎ የሂሳብ ረዳት</p>
         </div>
 
+        <div id="tenantProfileSection" class="section-box" style="margin-bottom: 20px; border-color: var(--accent-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div class="profile-data" style="margin:0;"><label>የሱቅ ስም፡</label> <span id="profShopName" style="margin-left: 5px;">-</span></div>
+                    <div class="profile-data" style="margin:0;"><label>ኢሜል፡</label> <span id="profGmail" style="color: var(--accent-color); margin-left: 5px;">-</span></div>
+                    <div class="profile-data" id="expiryRowOwner" style="margin:0;"><label>የውል ማቂያ፡</label> <span id="profExpiry" style="color: var(--danger-color); margin-left: 5px;">-</span></div>
+                </div>
+                <button id="btn_profile_editor" class="btn-add btn-sm" onclick="openTenantProfileEditor()">⚙️ የሱቅ መረጃ ማስተካከያ</button>
+            </div>
+        </div>
+
         <div id="sessionDisplay" class="session-badge">የዕለቱ መፈላጊ መረጃ በመጠባበቅ ላይ...</div>
         <div id="shiftStatusAlert" class="session-badge hidden" style="color:var(--danger-color); background:rgba(244,63,94,0.1); border-color:var(--danger-color); font-weight:bold; font-size: 1rem;">⚠️ ትኩረት፦ የዛሬው የስራ ሰዓት አብቅቷል። እባክዎ የዕለቱን ሂሳብ መዝጊያ ሪፖርት ያቅርቡ!</div>
 
@@ -306,6 +317,7 @@
             <button class="btn-expense" id="btn_expense" onclick="openExpenseModal()">📉 ወጪ መዝግብ</button>
             <button class="btn-credit" id="btn_credit" onclick="openDebtModal()">💳 ዕዳ መዝግብ</button>
             <button class="btn-draw" id="btn_draw" onclick="openDrawerModal()">💸 ከሳጥን ብር ማንሻ / መልስ</button>
+            <button class="btn-config" id="btn_staff_reg" style="background-color: #8b5cf6; color: white;" onclick="openStaffManagement()">👥 ሰራተኛ መመዝገቢያ</button>
             <button class="btn-config" id="btn_settlement" style="background-color: #22c55e; color: black;" onclick="openSettlementModal()">📊 ሂሳብ ማወራረጃ</button>
             <button class="btn-config" onclick="configureBank()">🏦 የባንክ / ቴሌግራም አፕ ማያያዣ</button>
             <button class="btn-next-day" id="btn_next_day" onclick="startNewDaySession()">🔄 አዲስ ቀን ጀምር</button>
@@ -429,19 +441,7 @@
         </div>
 
         <div class="section-box">
-            <h2>⚙️ መቼቶች እና ፕሮፋይል</h2>
-            <button id="btn_profile_editor" class="btn-add btn-block" style="margin-bottom: 12px; padding: 10px;" onclick="openTenantProfileEditor()">⚙️ የሱቅ መረጃ እና ፎቶ ማስተካከያ</button>
-            
-            <div class="profile-data"><label>የሱቅ ስም፡</label> <span id="profShopName">-</span></div>
-            <div class="profile-data" id="expiryRowOwner"><label>የውል ማቂያ ቀን፡</label> <span id="profExpiry" style="color: var(--danger-color);">-</span></div>
-            
-            <div id="ownerStaffConfig" style="margin: 15px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border:1px dashed var(--accent-color);">
-                <h4 style="color:var(--accent-color); font-size:0.9rem; margin-bottom:8px;">🔐 ለሰራተኛ መግቢያ ኮድ መፍጠሪያ (Staff Credentials)</h4>
-                <input type="text" id="staffUser" placeholder="የሰራተኛው መግቢያ ስም (Staff Username)">
-                <input type="text" id="staffPass" placeholder="የሰራተኛው የይለፍ ቃል (Staff Password)">
-                <button class="btn-sell btn-block" style="padding:8px;" onclick="saveStaffAccount()">💾 የሰራተኛ አካውንት አስቀምጥ</button>
-            </div>
-
+            <h2>⚙️ መቼቶች እና ሲስተም መውጫ</h2>
             <div class="profile-data">
                 <label>የመተግበሪያ ገጽታ (Theme)፦</label> 
                 <select id="themeSelector" onchange="changeTheme(this.value)" style="width: auto; margin: 0; padding: 4px 8px;">
@@ -457,6 +457,19 @@
 </div>
 
 <div id="modalOverlay" class="modal-overlay hidden">
+    <div id="staffManageModal" class="modal-card hidden">
+        <div class="modal-header"><h3 class="text-success">👥 ሰራተኛ መመዝገቢያ</h3></div>
+        <div class="modal-body">
+            <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:10px;">እስከ 3 ሰራተኞችን በተለያየ ፎርም መመዝገብ ይችላሉ።</p>
+            <div id="staffFormsContainer"></div>
+            <button class="btn-config btn-block" style="margin-top: 10px;" onclick="addStaffFormRow()">➕ ተጨማሪ ሰራተኛ ጨምር</button>
+        </div>
+        <div class="modal-footer" style="margin-top: 15px;">
+            <button class="btn-expense" onclick="closeActiveModal()">ሰርዝ</button>
+            <button class="btn-sell" onclick="saveAllStaff()">💾 መዝግብ</button>
+        </div>
+    </div>
+
     <div id="emailVerifyModal" class="modal-card hidden" style="text-align: center; max-width: 400px;">
         <div style="font-size:3rem; color:var(--accent-color); margin-bottom:10px;">📧</div>
         <h3 style="color:var(--text-color); margin-bottom:10px; font-size: 1.4rem;">Verify Your Email</h3>
