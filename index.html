@@ -41,73 +41,46 @@
         <div class="hero-icon" style="font-size: 4rem; margin-bottom: 10px;">🚀</div>
         <h2>እንኳን ደህና መጡ! <span id="syncIndicator" class="hidden offline-tag">Offline ሞድ</span></h2>
         <p>ወደ ዘመናዊው 'ትርፌ' የሱቅ መቆጣጠሪያ ሲስተም</p>
-        <button class="btn-sell btn-block" style="padding: 15px; font-size: 1.1rem; margin-bottom: 15px;" onclick="showLoginSection()">🔑 ወደ አካውንትዎ ይግቡ (Login)</button>
-        <button class="btn-add btn-block" style="padding: 15px; font-size: 1.1rem; background: var(--warning-color);" onclick="showRegisterSection()">📝 አዲስ ምዝገባ (Register)</button>
+        <button class="gateway-btn" onclick="showLoginSection('admin')">👑 የአስተዳዳሪ (Admin) መግቢያ</button>
+        <button class="gateway-btn" onclick="showLoginSection('merchant')">💼 የሱቅ ባለቤት (Tenant) መግቢያ</button>
+        <button class="gateway-btn" onclick="showLoginSection('staff')">🛠️ የሱቅ ሰራተኛ መግቢያ</button>
+        <button class="gateway-btn" style="background: var(--warning-color); color:#000;" onclick="showBuyerLoginSection()">🛍️ የገዥ (ደንበኛ) መግቢያ</button>
     </div>
 
-    <div id="loginPage" class="login-box hidden">
-        <h2>🔒 ወደ ሲስተሙ መግቢያ</h2>
-        <p>ተከራይ፣ ገዥ፣ አድሚን ወይም ሰራተኛ መሆንዎን ሲስተሙ በራሱ ይለያል</p>
-        <input type="text" id="loginUser" placeholder="የተጠቃሚ ስም (Username) ወይም Email">
-        <input type="password" id="loginPass" placeholder="የይለፍ ቃል (Password / Code)">
-        <button class="btn-sell btn-block" onclick="handleUnifiedLogin()">ግባ</button>
-        <button class="btn-config btn-block" style="margin-top: 8px;" onclick="goToGateway()">⬅️ ወደ ኋላ ተመለስ</button>
-        <p id="loginError" style="color: var(--danger-color); margin-top: 15px; font-size: 0.9rem; font-weight: bold;"></p>
-    </div>
-
-    <div id="registerPage" class="login-box hidden" style="max-width: 500px;">
-        <h2>📝 አዲስ ምዝገባ</h2>
-        <label style="color: var(--accent-color); font-size: 0.9rem; margin-bottom: 5px; display: block;">ማንነትዎን ይምረጡ፦</label>
+    <div id="buyerLoginBox" class="login-box hidden">
+        <h2>🛍️ የገዥ (ደንበኛ) መግቢያ</h2>
+        <p>ዕቃዎችን ለማየት፣ ዴሊቨሪ ለማዘዝ እና ለመግዛት</p>
         <select id="regRole" onchange="toggleRegForm()">
-            <option value="">-- ይምረጡ --</option>
-            <option value="tenant">🏪 እኔ የሱቅ ባለቤት (ተከራይ) ነኝ</option>
-            <option value="buyer">🛍️ እኔ ደንበኛ (ገዥ) ነኝ</option>
+            <option value="login">🔑 ነባር አካውንት አለኝ (ግባ)</option>
+            <option value="buyer">📝 አዲስ ገዥ መመዝገቢያ</option>
         </select>
+        
+        <div id="buyerLoginForm" style="margin-top: 15px; text-align: left;">
+            <input type="text" id="buyerUsername" placeholder="የተጠቃሚ ስም (Username)">
+            <input type="password" id="buyerPhone" placeholder="የይለፍ ቃል ወይም ስልክ ቁጥር">
+            <button class="btn-sell btn-block" style="margin-top:10px;" onclick="handleBuyerAuth()">ግባ (Login)</button>
+        </div>
 
         <div id="regBuyerForm" class="hidden" style="margin-top: 15px; text-align: left;">
             <input type="text" id="regBuyerName" placeholder="ሙሉ ስም">
             <input type="tel" id="regBuyerPhone" placeholder="ስልክ ቁጥር (ግዴታ 10 አሃዝ)" pattern="[0-9]{10}" maxlength="10">
             <input type="email" id="regBuyerEmail" placeholder="ኢሜል (Email)">
             <input type="text" id="regBuyerUser" placeholder="የመግቢያ ስም (Username)">
-            <input type="password" id="regBuyerPass" placeholder="የይለፍ ቃል (Password) ፍጠር">
-            <button class="btn-sell btn-block" style="margin-top:10px;" onclick="handleBuyerRegister()">ተመዝገብ (Register)</button>
+            <button class="btn-warning btn-block" style="background:var(--warning-color); color:#000; margin-top:10px;" onclick="triggerBuyerRegistration()">ተመዝገብ (Register)</button>
         </div>
+        
+        <p id="buyerLoginError" style="color: var(--danger-color); margin-top: 15px; font-size: 0.9rem; font-weight: bold;"></p>
+        <button class="btn-config btn-block" style="margin-top: 15px;" onclick="goToGateway()">⬅️ ወደ ኋላ ተመለስ</button>
+    </div>
 
-        <div id="regTenantForm" class="hidden" style="margin-top: 15px; text-align: left;">
-            <input type="text" id="newShopName" placeholder="የሱቅ ስም (ምሳሌ፡ አልፋ)">
-            <input type="text" id="newFullName" placeholder="የተከራይ ሙሉ ስም">
-            <input type="text" id="newUsername" placeholder="መግቢያ ስም (Username)">
-            <input type="email" id="newEmail" placeholder="ኢሜል አድራሻ (ግዴታ)">
-            <input type="tel" id="newPhone" placeholder="ስልክ ቁጥር (10 አሃዝ)" maxlength="10">
-            <input type="text" id="newTelegram" placeholder="የቴሌግራም መግቢያ (አማራጭ)">
-            <input type="text" id="newMapsLink" placeholder="የሱቅ ጎግል ማፕ ሊንክ (አማራጭ)">
-            <input type="text" id="newAddress" placeholder="ያለበት ሀገር / ከተማ / ክልል">
-            <input type="text" id="newBusinessType" placeholder="የንግድ ዘርፍ (ምሳሌ፡ ኤሌክትሮኒክስ)">
-            
-            <label style="color: var(--accent-color); font-size: 0.85rem; margin-top:10px; display:block;">የንግድ ካፒታል መጠን (የኪራይ መቁረጫ ምድብ):</label>
-            <select id="newCapitalTier">
-                <option value="low">ዝቅተኛ (Low)</option>
-                <option value="medium">መካከለኛ (Medium)</option>
-                <option value="high">ከፍተኛ (High)</option>
-            </select>
-
-            <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ዓይነት (Contract Type)፦</label>
-            <select id="newContractType">
-                <option value="በወር">በወር (Monthly)</option>
-                <option value="በዓመት">በዓመት (Yearly)</option>
-            </select>
-
-            <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ማቂያ ቀን (Expiry Date)፦</label>
-            <input type="date" id="newExpiryDate" required>
-            <input type="number" id="newRegistrationFee" placeholder="የመመዝገቢያ/ኪራይ ክፍያ (ETB)">
-
-            <label style="color: var(--accent-color); font-size: 0.85rem; margin-top:10px; display:block;">የሱቅ ፕሮፋይል ፎቶ (አማራጭ)፡</label>
-            <input type="file" id="newShopLogoFile" accept="image/*">
-            <button class="btn-warning btn-block" style="background:var(--warning-color); color:#000; font-weight:bold; padding:12px; margin-top:15px; border-radius:8px;" onclick="registerTenant()">ምዝገባውን ላክ (Submit)</button>
-        </div>
-
-        <p id="regError" style="color: var(--danger-color); margin-top: 15px; font-size: 0.9rem; font-weight: bold; text-align:center;"></p>
-        <button class="btn-config btn-block" style="margin-top: 15px;" onclick="goToGateway()">⬅️ ወደ ኋላ</button>
+    <div id="loginPage" class="login-box hidden">
+        <h2 id="loginTitle">🔒 ወደ ሲስተሙ መግቢያ</h2>
+        <p id="loginDesc">እባክዎ መረጃዎን በትክክል ያስገቡ</p>
+        <input type="text" id="loginUser" placeholder="የተጠቃሚ ስም (Username)">
+        <input type="password" id="loginPass" placeholder="የይለፍ ቃል (Password)">
+        <button class="btn-sell btn-block" onclick="handleLogin()">ግባ</button>
+        <button class="btn-config btn-block" style="margin-top: 8px;" onclick="goToGateway()">⬅️ ወደ ኋላ ተመለስ</button>
+        <p id="loginError" style="color: var(--danger-color); margin-top: 15px; font-size: 0.9rem; font-weight: bold;"></p>
     </div>
 
     <div id="buyerPage" class="hidden">
@@ -115,7 +88,7 @@
             <h1>🛍️ የዕቃዎችና የሱቆች ማውጫ መድረክ</h1>
             <p>በአቅራቢያዎ ያሉ ሱቆችን ምርቶች፣ ዋጋዎች እና አድራሻ እዚህ ያግኙ። በዴሊቨሪ ማዘዝም ይችላሉ!</p>
             <div id="buyerProfileBadge" style="margin-top:10px; font-size:0.9rem; color:var(--warning-color); font-weight:bold;"></div>
-            <button class="btn-expense" style="margin-top:10px;" onclick="logoutBuyer()">⬅️ ከገዥ ገፅ ውጣ</button>
+            <button class="btn-expense" style="margin-top:10px;" onclick="logoutBuyer()">🚪 ከገዥ ገፅ ውጣ</button>
         </div>
         
         <div class="section-box" id="buyerCartSection" style="display: none; border-color: var(--warning-color);">
@@ -136,13 +109,13 @@
             <h2>📦 የጠየቋቸው ትዕዛዞች (Orders) እና ደረሰኞች</h2>
             <div class="table-responsive">
                 <table>
-                    <thead><tr><th>የሱቅ ስም</th><th>ዕቃና ብዛት</th><th>ዋጋ</th><th>ቀን</th><th>ሁኔታ/ደረሰኝ</th></tr></thead>
+                    <thead><tr><th>የሱቅ ስም</th><th>ዕቃና ብዛት</th><th>ዋጋ</th><th>ቀን</th><th>ሁኔታ</th></tr></thead>
                     <tbody id="buyerOrdersBody"></tbody>
                 </table>
             </div>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
-                <h3 style="font-size: 1rem; color: var(--success-color); margin: 0;">🧾 የተቆረጡ ደረሰኞች (My Receipts)</h3>
+                <h3 style="font-size: 1rem; color: var(--success-color); margin: 0;">🧾 የተቆረጡ ደረሰኞች (Receipts)</h3>
                 <div style="display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <label style="font-size:0.8rem; color:var(--accent-color); margin:0;">ቀን ምረጥ፦</label>
                     <input type="date" id="buyerReceiptDateFilter" onchange="renderBuyerCatalog()" style="padding: 4px; margin: 0; width: auto; font-size: 0.8rem; background: transparent; border: 1px solid #3a506b; color: white;">
@@ -194,9 +167,51 @@
             </div>
         </div>
 
+        <div class="section-box" style="border-color: var(--success-color);">
+            <h2 style="color: var(--success-color);">➕ አዲስ ተከራይ መመዝገቢያ ፎርም</h2>
+            <div id="regTenantForm" style="margin-top: 15px; text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="text" id="newShopName" placeholder="የሱቅ ስም (ምሳሌ፡ አልፋ)">
+                <input type="text" id="newFullName" placeholder="የተከራይ ሙሉ ስም">
+                <input type="text" id="newUsername" placeholder="መግቢያ ስም (Username)">
+                <input type="email" id="newEmail" placeholder="ኢሜል አድራሻ (ግዴታ)">
+                <input type="tel" id="newPhone" placeholder="ስልክ ቁጥር (10 አሃዝ)" maxlength="10">
+                <input type="text" id="newTelegram" placeholder="የቴሌግራም መግቢያ (አማራጭ)">
+                <input type="text" id="newMapsLink" placeholder="የሱቅ ጎግል ማፕ ሊንክ (አማራጭ)" style="grid-column: span 2;">
+                <input type="text" id="newAddress" placeholder="ያለበት ሀገር / ከተማ / ክልል">
+                <input type="text" id="newBusinessType" placeholder="የንግድ ዘርፍ (ምሳሌ፡ ኤሌክትሮኒክስ)">
+                
+                <div style="grid-column: span 2; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                    <label style="color: var(--accent-color); font-size: 0.85rem; display:block;">የንግድ ካፒታል መጠን (የኪራይ መቁረጫ ምድብ):</label>
+                    <select id="newCapitalTier" onchange="autoFillCapitalFee()">
+                        <option value="">-- ካፒታል ይምረጡ --</option>
+                        <option value="low">ዝቅተኛ (Low)</option>
+                        <option value="medium">መካከለኛ (Medium)</option>
+                        <option value="high">ከፍተኛ (High)</option>
+                    </select>
+
+                    <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ዓይነት (Contract Type)፦</label>
+                    <select id="newContractType">
+                        <option value="በወር">በወር (Monthly)</option>
+                        <option value="በዓመት">በዓመት (Yearly)</option>
+                    </select>
+
+                    <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ማቂያ ቀን (Expiry Date)፦</label>
+                    <input type="date" id="newExpiryDate" required>
+                    <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የመመዝገቢያ/ኪራይ ክፍያ (ETB):</label>
+                    <input type="number" id="newRegistrationFee" placeholder="የመመዝገቢያ ክፍያ (ETB)" readonly style="background: rgba(255,255,255,0.1);">
+                </div>
+
+                <div style="grid-column: span 2;">
+                    <label style="color: var(--accent-color); font-size: 0.85rem; margin-top:10px; display:block;">የሱቅ ፕሮፋይል ፎቶ (አማራጭ)፡</label>
+                    <input type="file" id="newShopLogoFile" accept="image/*">
+                </div>
+                <button class="btn-warning btn-block" style="background:var(--warning-color); color:#000; font-weight:bold; padding:12px; margin-top:10px; border-radius:8px; grid-column: span 2;" onclick="registerTenant()">ምዝገባውን ላክ (Submit)</button>
+            </div>
+        </div>
+
         <div class="section-box" style="border-color: #f59e0b;">
             <h2 style="color: #f59e0b;">📧 የኢሜል ማዋቀሪያ (Email SMTP Settings)</h2>
-            <p style="font-size: 0.85rem; color:#94a3b8; margin-bottom:10px;">ሲስተሙ ለተከራዮች አውቶማቲክ ኮድ ሲልክ የሚጠቀምበት የጂሜል (Gmail) እና App Password እዚህ ያዋቅሩ።</p>
+            <p style="font-size: 0.85rem; color:#94a3b8; margin-bottom:10px;">ሲስተሙ የኢሜል ማረጋገጫ ኮድ ሲልክ የሚጠቀምበት ማዋቀሪያ</p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <input type="email" id="adminEmailConfig" placeholder="የአከራይ ኢሜል (ምሳሌ: apkcode1@gmail.com)">
                 <input type="password" id="adminAppPassConfig" placeholder="Google App Password (ባለ 16 አሃዝ)">
@@ -442,6 +457,23 @@
 </div>
 
 <div id="modalOverlay" class="modal-overlay hidden">
+    <div id="emailVerifyModal" class="modal-card hidden" style="text-align: center; max-width: 400px;">
+        <div style="font-size:3rem; color:var(--accent-color); margin-bottom:10px;">📧</div>
+        <h3 style="color:var(--text-color); margin-bottom:10px; font-size: 1.4rem;">Verify Your Email</h3>
+        <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:20px;">Please Enter The Verification Code We Sent To <br><strong id="verifyEmailDisplay" style="color:var(--accent-color);"></strong></p>
+        
+        <div class="verification-code-container" style="display:flex; justify-content:center; gap:10px; margin-bottom:25px;">
+            <input type="text" id="code1" class="code-box" maxlength="1" oninput="moveToNext(this, 'code2')" onkeydown="moveToPrev(event, this, null)">
+            <input type="text" id="code2" class="code-box" maxlength="1" oninput="moveToNext(this, 'code3')" onkeydown="moveToPrev(event, this, 'code1')">
+            <input type="text" id="code3" class="code-box" maxlength="1" oninput="moveToNext(this, 'code4')" onkeydown="moveToPrev(event, this, 'code2')">
+            <input type="text" id="code4" class="code-box" maxlength="1" oninput="moveToNext(this, 'code5')" onkeydown="moveToPrev(event, this, 'code3')">
+            <input type="text" id="code5" class="code-box" maxlength="1" onkeydown="moveToPrev(event, this, 'code4')">
+        </div>
+        
+        <button class="btn-sell btn-block" style="padding:15px; border-radius:10px; font-size:1.1rem; background:#6366f1; color:#fff;" onclick="verifyEmailCodeSubmit()">Confirm</button>
+        <button class="btn-config btn-block" style="margin-top:10px; background:transparent; border:1px solid #64748b; color:#94a3b8;" onclick="closeActiveModal()">Cancel</button>
+    </div>
+
     <div id="alertModal" class="modal-card hidden">
         <div class="modal-header"><h3 id="alertTitle" class="text-warning">መልዕክት</h3></div>
         <div class="modal-body"><p id="alertMessage"></p></div>
