@@ -147,79 +147,111 @@
             <button class="btn-expense" style="margin-top: 15px; width:100%;" onclick="logout()">🚪 ከሲስተሙ ውጣ</button>
         </div>
 
-        <div class="dashboard" style="margin-bottom: 20px;">
-            <div class="card" style="border-left: 4px solid var(--accent-color);">
-                <h3>ጠቅላላ ተከራዮች</h3>
-                <p id="adminTotalTenants">0</p>
-            </div>
-            <div class="card" style="border-left: 4px solid var(--success-color);">
-                <h3>ንቁ ተከራዮች</h3>
-                <p id="adminActiveTenants">0</p>
-            </div>
-            <div class="card" style="border-left: 4px solid var(--warning-color);">
-                <h3>ጠቅላላ የተሰበሰበ ክፍያ</h3>
-                <p id="adminTotalFees">0.00 ETB</p>
-            </div>
-            <div class="card" style="border-left: 4px solid var(--purple-color);">
-                <h3>የገዥዎች ቆጠራ (Buyers)</h3>
-                <p id="adminTotalBuyers">0</p>
-                <button class="btn-config btn-sm" style="margin-top:8px; width:100%; font-size:0.8rem;" onclick="document.getElementById('adminBuyersSection').classList.toggle('hidden'); renderAdminBuyers();">ገዦችን በዝርዝር እይ</button>
-            </div>
-        </div>
-
-        <div class="section-box" style="border-color: var(--success-color);">
-            <h2 style="color: var(--success-color);">➕ አዲስ ተከራይ መመዝገቢያ ፎርም</h2>
-            <div id="regTenantForm" style="margin-top: 15px; text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="text" id="newShopName" placeholder="የሱቅ ስም (ምሳሌ፡ አልፋ)">
-                <input type="text" id="newFullName" placeholder="የተከራይ ሙሉ ስም">
-                <input type="text" id="newUsername" placeholder="መግቢያ ስም (Username)">
-                <input type="email" id="newEmail" placeholder="ኢሜል አድራሻ (ግዴታ)">
-                <input type="tel" id="newPhone" placeholder="ስልክ ቁጥር (10 አሃዝ)" maxlength="10">
-                <input type="text" id="newTelegram" placeholder="የቴሌግራም መግቢያ (አማራጭ)">
-                <input type="text" id="newMapsLink" placeholder="የሱቅ ጎግል ማፕ ሊንክ (አማራጭ)" style="grid-column: span 2;">
-                <input type="text" id="newAddress" placeholder="ያለበት ሀገር / ከተማ / ክልል">
-                <input type="text" id="newBusinessType" placeholder="የንግድ ዘርፍ (ምሳሌ፡ ኤሌክትሮኒክስ)">
-                
-                <div style="grid-column: span 2; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-                    <label style="color: var(--accent-color); font-size: 0.85rem; display:block;">የንግድ ካፒታል መጠን (የኪራይ መቁረጫ ምድብ):</label>
-                    <select id="newCapitalTier" onchange="autoFillCapitalFee()">
-                        <option value="">-- ካፒታል ይምረጡ --</option>
-                        <option value="low">ዝቅተኛ (Low)</option>
-                        <option value="medium">መካከለኛ (Medium)</option>
-                        <option value="high">ከፍተኛ (High)</option>
-                    </select>
-
-                    <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ዓይነት (Contract Type)፦</label>
-                    <select id="newContractType">
-                        <option value="በወር">በወር (Monthly)</option>
-                        <option value="በዓመት">በዓመት (Yearly)</option>
-                    </select>
-
-                    <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ማቂያ ቀን (Expiry Date)፦</label>
-                    <input type="date" id="newExpiryDate" required>
-                    <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የመመዝገቢያ/ኪራይ ክፍያ (ETB):</label>
-                    <input type="number" id="newRegistrationFee" placeholder="የመመዝገቢያ ክፍያ (ETB)" readonly style="background: rgba(255,255,255,0.1);">
+        <div id="adminDashboardMain">
+            <div class="dashboard" style="margin-bottom: 20px;">
+                <div class="card" style="border-left: 4px solid var(--accent-color);">
+                    <h3>ጠቅላላ ተከራዮች</h3>
+                    <p id="adminTotalTenants">0</p>
                 </div>
-
-                <div style="grid-column: span 2;">
-                    <label style="color: var(--accent-color); font-size: 0.85rem; margin-top:10px; display:block;">የሱቅ ፕሮፋይል ፎቶ (አማራጭ)፡</label>
-                    <input type="file" id="newShopLogoFile" accept="image/*">
+                <div class="card" style="border-left: 4px solid var(--success-color);">
+                    <h3>ንቁ ተከራዮች</h3>
+                    <p id="adminActiveTenants">0</p>
                 </div>
-                <button class="btn-warning btn-block" style="background:var(--warning-color); color:#000; font-weight:bold; padding:12px; margin-top:10px; border-radius:8px; grid-column: span 2;" onclick="registerTenant()">ምዝገባውን ላክ (Submit)</button>
+                <div class="card" style="border-left: 4px solid var(--warning-color);">
+                    <h3>ጠቅላላ የተሰበሰበ ክፍያ</h3>
+                    <p id="adminTotalFees">0.00 ETB</p>
+                </div>
+                <div class="card" style="border-left: 4px solid var(--purple-color);">
+                    <h3>የገዥዎች ቆጠራ (Buyers)</h3>
+                    <p id="adminTotalBuyers">0</p>
+                    <button class="btn-config btn-sm" style="margin-top:8px; width:100%; font-size:0.8rem;" onclick="toggleAdminBuyersView()">ገዦችን በዝርዝር እይ</button>
+                </div>
             </div>
-        </div>
 
-        <div class="section-box" style="border-color: #f59e0b;">
-            <h2 style="color: #f59e0b;">📧 የኢሜል ማዋቀሪያ (Email SMTP Settings)</h2>
-            <p style="font-size: 0.85rem; color:#94a3b8; margin-bottom:10px;">ሲስተሙ የኢሜል ማረጋገጫ ኮድ ሲልክ የሚጠቀምበት ማዋቀሪያ</p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="email" id="adminEmailConfig" placeholder="የአከራይ ኢሜል (ምሳሌ: apkcode1@gmail.com)">
-                <input type="password" id="adminAppPassConfig" placeholder="Google App Password (ባለ 16 አሃዝ)">
+            <div id="adminExpiryAlerts"></div>
+
+            <div style="display:flex; gap:10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="btn-sell" onclick="toggleTenantListView()">👥 ተከራዮችን ዝርዝር እይ</button>
+                <button class="btn-config" style="background-color: #f59e0b; color: black;" onclick="openTariffSettings()">💰 የታሪፍ ሲቲንግ</button>
             </div>
-            <button class="btn-sell btn-block" style="margin-top: 10px;" onclick="saveAdminEmailSettings()">💾 ሲቲንግ አስቀምጥ</button>
-        </div>
 
-        <div class="section-box hidden" id="adminBuyersSection" style="border-color: var(--purple-color);">
+            <div class="section-box" style="border-color: var(--success-color);">
+                <h2 style="color: var(--success-color);">➕ አዲስ ተከራይ መመዝገቢያ ፎርም</h2>
+                <div id="regTenantForm" style="margin-top: 15px; text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="newShopName" placeholder="የሱቅ ስም (ምሳሌ፡ አልፋ)">
+                    <input type="text" id="newFullName" placeholder="የተከራይ ሙሉ ስም">
+                    <input type="text" id="newUsername" placeholder="መግቢያ ስም (Username)">
+                    <input type="email" id="newEmail" placeholder="ኢሜል አድራሻ (ግዴታ)">
+                    <input type="tel" id="newPhone" placeholder="ስልክ ቁጥር (10 አሃዝ)" maxlength="10">
+                    <input type="text" id="newTelegram" placeholder="የቴሌግራም መግቢያ (አማራጭ)">
+                    <input type="text" id="newMapsLink" placeholder="የሱቅ ጎግል ማፕ ሊንክ (አማራጭ)" style="grid-column: span 2;">
+                    <input type="text" id="newAddress" placeholder="ያለበት ሀገር / ከተማ / ክልል">
+                    <input type="text" id="newBusinessType" placeholder="የንግድ ዘርፍ (ምሳሌ፡ ኤሌክትሮኒክስ)">
+                    
+                    <div style="grid-column: span 2; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                        <label style="color: var(--accent-color); font-size: 0.85rem; display:block;">የንግድ ካፒታል መጠን (የኪራይ መቁረጫ ምድብ):</label>
+                        <select id="newCapitalTier" onchange="autoFillCapitalFee()">
+                            <option value="">-- ካፒታል ይምረጡ --</option>
+                            <option value="low">ዝቅተኛ (Low)</option>
+                            <option value="medium">መካከለኛ (Medium)</option>
+                            <option value="high">ከፍተኛ (High)</option>
+                        </select>
+
+                        <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ዓይነት (Contract Type)፦</label>
+                        <select id="newContractType">
+                            <option value="በወር">በወር (Monthly)</option>
+                            <option value="በዓመት">በዓመት (Yearly)</option>
+                        </select>
+
+                        <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የውል ማቂያ ቀን (Expiry Date)፦</label>
+                        <input type="date" id="newExpiryDate" required>
+                        <label style="font-size: 0.85rem; color: var(--accent-color); display:block; margin-top: 8px;">የመመዝገቢያ/ኪራይ ክፍያ (ETB):</label>
+                        <input type="number" id="newRegistrationFee" placeholder="የመመዝገቢያ ክፍያ (ETB)" readonly style="background: rgba(255,255,255,0.1);">
+                    </div>
+
+                    <div style="grid-column: span 2;">
+                        <label style="color: var(--accent-color); font-size: 0.85rem; margin-top:10px; display:block;">የሱቅ ፕሮፋይል ፎቶ (አማራጭ)፡</label>
+                        <input type="file" id="newShopLogoFile" accept="image/*">
+                    </div>
+                    <button class="btn-warning btn-block" style="background:var(--warning-color); color:#000; font-weight:bold; padding:12px; margin-top:10px; border-radius:8px; grid-column: span 2;" onclick="registerTenant()">ምዝገባውን ላክ (Submit)</button>
+                </div>
+            </div>
+
+            <div class="section-box hidden" id="adminTenantsSection">
+                <h2>📈 የተከራዮች ሁኔታ እና የውል መቆጣጠሪያ</h2>
+                <div class="search-container">
+                    <input type="text" id="adminSearchInput" class="search-input" placeholder="🔍 ተከራይን በዩዘርኔም (Username) ብቻ በቀላሉ ለመፈለግ..." oninput="renderAdminPanel()">
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>የሱቅ ስም / ዘርፍ / ካፒታል</th>
+                                <th>የተከራይ መገለጫ (Profile)</th>
+                                <th>የመግቢያ ዝርዝር / ኮድ</th>
+                                <th>የውል ዓይነት / ክፍያ</th>
+                                <th>የማቂያ ቀን</th>
+                                <th>የአሁን ሁኔታ</th>
+                                <th>እርምጃዎች</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tenantTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section-box" style="border-color: #f59e0b;">
+                <h2 style="color: #f59e0b;">📧 የኢሜል ማዋቀሪያ (Email SMTP Settings)</h2>
+                <p style="font-size: 0.85rem; color:#94a3b8; margin-bottom:10px;">ሲስተሙ የኢሜል ማረጋገጫ ኮድ ሲልክ የሚጠቀምበት ማዋቀሪያ</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="email" id="adminEmailConfig" placeholder="የአከራይ ኢሜል (ምሳሌ: apkcode1@gmail.com)">
+                    <input type="password" id="adminAppPassConfig" placeholder="Google App Password (ባለ 16 አሃዝ)">
+                </div>
+                <button class="btn-sell btn-block" style="margin-top: 10px;" onclick="saveAdminEmailSettings()">💾 ሲቲንግ አስቀምጥ</button>
+            </div>
+
+        </div> <div class="section-box hidden" id="adminBuyersSection" style="border-color: var(--purple-color);">
+            <button class="btn-config btn-sm" style="margin-bottom:15px;" onclick="toggleAdminBuyersView()">⬅️ ወደ ዳሽቦርድ ተመለስ</button>
             <h2 style="color: var(--purple-color);">👥 የገዥዎች ዝርዝር እና መቆጣጠሪያ</h2>
             <div class="table-responsive">
                 <table>
@@ -229,28 +261,6 @@
             </div>
         </div>
 
-        <div class="section-box">
-            <h2>📈 የተከራዮች ሁኔታ እና የውል መቆጣጠሪያ</h2>
-            <div class="search-container">
-                <input type="text" id="adminSearchInput" class="search-input" placeholder="🔍 ተከራይን በዩዘርኔም (Username) ብቻ በቀላሉ ለመፈለግ..." oninput="renderAdminPanel()">
-            </div>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>የሱቅ ስም / ዘርፍ / ካፒታል</th>
-                            <th>የተከራይ መገለጫ (Profile)</th>
-                            <th>የመግቢያ ዝርዝር / ኮድ</th>
-                            <th>የውል ዓይነት / ክፍያ</th>
-                            <th>የማቂያ ቀን</th>
-                            <th>የአሁን ሁኔታ</th>
-                            <th>እርምጃዎች</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tenantTableBody"></tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <div id="appPage" class="hidden">
@@ -297,6 +307,10 @@
             <div class="card" style="border-left: 4px solid #a855f7;">
                 <h3>የተመዘገቡ ገዥዎች</h3>
                 <p id="sellerTotalBuyers" style="color: #a855f7;">0</p>
+            </div>
+            <div class="card" style="border-left: 4px solid #f59e0b;">
+                <h3>የወር ኪራይ (Rent)</h3>
+                <p id="tenantRentDisplay" style="color: #f59e0b;">0.00</p>
             </div>
         </div>
 
